@@ -165,14 +165,9 @@ async function loadCSVData() {
     const arrayBuffer = await response.arrayBuffer();
 
     // CP949 (EUC-KR) 디코딩 시도
-    let decodedText;
-    try {
-      const decoder = new TextDecoder("euc-kr");
-      decodedText = decoder.decode(arrayBuffer);
-    } catch (error) {
-      console.log("EUC-KR 디코딩 실패, UTF-8 시도");
-      const decoder = new TextDecoder("utf-8");
-      decodedText = decoder.decode(arrayBuffer);
+    let decodedText = new TextDecoder("utf-8").decode(arrayBuffer);
+    if (decodedText.includes("�")) {
+      decodedText = new TextDecoder("euc-kr").decode(arrayBuffer);
     }
 
     console.log("CSV 파일 로드 성공");
