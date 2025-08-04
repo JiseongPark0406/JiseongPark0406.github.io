@@ -1,35 +1,48 @@
-// 실제 CSV 데이터 (course_schedule_with_section_id.csv 내용)
-const embeddedCSVData = `section_id,전공,이수구분,교과목명,학점,교수명,요일,교시/시간,수업방법
-a937fff2-69d4-44c9-ba9f-0abcc3ebf3dd,산업경영공학과,전심,RISE,3.0,김병수,미정,미정,오프라인
-f3333230-1680-499a-99b6-e8937d632e77,산업경영공학과,전심,RISE,3.0,박기정,미정,미정,오프라인
-37fbc56a-f09a-4dbb-908d-cd0a18bae068,산업경영공학과,전심,RISE,3.0,이종헌,미정,미정,오프라인
-ba6d15ed-2067-4a16-9cb3-fe19a16465f6,산업경영공학과,전심,RISE,3.0,정지혁,미정,미정,오프라인
-c6713d3e-5039-4cbb-9c43-0f1e56414828,산업경영공학과,기교,선형대수,3.0,장석화,월,2B-3,오프라인
-c6713d3e-5039-4cbb-9c43-0f1e56414828,산업경영공학과,기교,선형대수,3.0,장석화,월,4-5A,오프라인
-b8cd4a4d-68e5-4123-9698-1a2b2c6e8f47,산업경영공학과,기교,선형대수,3.0,장석화,수,2B-3,오프라인
-b8cd4a4d-68e5-4123-9698-1a2b2c6e8f47,산업경영공학과,기교,선형대수,3.0,장석화,수,4-5A,// 전역 변수
 let coursesData = [];
 let selectedCourses = [];
 let filteredCourses = [];
 
 // 색상 팔레트
 const colors = [
-  "#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4", "#FFEAA7", 
-  "#DDA0DD", "#98D8C8", "#FD79A8", "#FDCB6E", "#6C5CE7",
+  "#FF6B6B",
+  "#4ECDC4",
+  "#45B7D1",
+  "#96CEB4",
+  "#FFEAA7",
+  "#DDA0DD",
+  "#98D8C8",
+  "#FD79A8",
+  "#FDCB6E",
+  "#6C5CE7",
 ];
 
 // 시간 매핑
 const timeMap = {
-  "0": "08:00 ~ 08:50", "1": "09:00 ~ 09:50", "2": "10:00 ~ 10:50",
-  "3": "11:00 ~ 11:50", "4": "12:00 ~ 12:50", "5": "13:00 ~ 13:50",
-  "6": "14:00 ~ 14:50", "7": "15:00 ~ 15:50", "8": "16:00 ~ 16:50",
-  "9": "17:00 ~ 17:50",
-  "0A-0": "07:30 ~ 08:45", "1-2A": "09:00 ~ 10:15", "2B-3": "10:30 ~ 11:45",
-  "4-5A": "12:00 ~ 13:15", "5B-6": "13:30 ~ 14:45", "7-8A": "15:00 ~ 16:15",
+  0: "08:00 ~ 08:50",
+  1: "09:00 ~ 09:50",
+  2: "10:00 ~ 10:50",
+  3: "11:00 ~ 11:50",
+  4: "12:00 ~ 12:50",
+  5: "13:00 ~ 13:50",
+  6: "14:00 ~ 14:50",
+  7: "15:00 ~ 15:50",
+  8: "16:00 ~ 16:50",
+  9: "17:00 ~ 17:50",
+  "0A-0": "07:30 ~ 08:45",
+  "1-2A": "09:00 ~ 10:15",
+  "2B-3": "10:30 ~ 11:45",
+  "4-5A": "12:00 ~ 13:15",
+  "5B-6": "13:30 ~ 14:45",
+  "7-8A": "15:00 ~ 16:15",
   "8B-9": "16:30 ~ 17:45",
-  "야1": "18:00 ~ 18:50", "야2": "18:55 ~ 19:45", "야3": "19:50 ~ 20:40",
-  "야4": "20:45 ~ 21:35", "야5": "21:40 ~ 22:30",
-  "야1-2A": "18:00 ~ 19:15", "야2B-3": "19:25 ~ 20:40", "야4-5A": "20:50 ~ 22:05",
+  야1: "18:00 ~ 18:50",
+  야2: "18:55 ~ 19:45",
+  야3: "19:50 ~ 20:40",
+  야4: "20:45 ~ 21:35",
+  야5: "21:40 ~ 22:30",
+  "야1-2A": "18:00 ~ 19:15",
+  "야2B-3": "19:25 ~ 20:40",
+  "야4-5A": "20:50 ~ 22:05",
 };
 
 // 시간표 시간 슬롯 (9시부터 21시까지)
@@ -38,36 +51,24 @@ for (let hour = 9; hour <= 21; hour++) {
   timeSlots.push(`${hour.toString().padStart(2, "0")}:00`);
 }
 
-// 실제 CSV 데이터를 여기에 붙여넣으세요 (임시)
-const embeddedCSVData = `section_id,전공,이수구분,교과목명,학점,교수명,요일,교시/시간,수업방법
-test1,컴퓨터공학과,전필,자료구조,3.0,김교수,월,1-2A,오프라인
-test1,컴퓨터공학과,전필,자료구조,3.0,김교수,수,1-2A,오프라인
-test2,컴퓨터공학과,전선,웹프로그래밍,3.0,박교수,화,7-8A,블렌디드
-test3,산업경영공학과,기교,선형대수,3.0,장교수,목,2B-3,오프라인
-test3,산업경영공학과,기교,선형대수,3.0,장교수,목,4-5A,오프라인
-test4,교양,교필,대학영어,2.0,Smith,금,4-5A,오프라인
-test5,경영학부,전필,마케팅,3.0,최교수,화,2B-3,오프라인
-test6,경영학부,전선,회계학,3.0,정교수,목,7-8A,오프라인
-test7,수학과,전필,미적분학,3.0,한교수,월,야1-2A,오프라인
-test8,물리학과,기교,일반물리학,3.0,윤교수,수,4-5A,오프라인`;
-
 // 시간 겹침 검사 함수
 function getTimeOverlaps() {
   const overlaps = new Set();
-  
+
   for (let i = 0; i < selectedCourses.length; i++) {
     for (let j = i + 1; j < selectedCourses.length; j++) {
       const course1 = selectedCourses[i];
       const course2 = selectedCourses[j];
-      
+
       // 각 과목의 시간들을 비교
-      course1.times.forEach(time1 => {
-        course2.times.forEach(time2 => {
-          if (time1.요일 === time2.요일 && 
-              time1.요일 !== '미정' && 
-              time1.시간 !== '미정' && 
-              time2.시간 !== '미정') {
-            
+      course1.times.forEach((time1) => {
+        course2.times.forEach((time2) => {
+          if (
+            time1.요일 === time2.요일 &&
+            time1.요일 !== "미정" &&
+            time1.시간 !== "미정" &&
+            time2.시간 !== "미정"
+          ) {
             // 시간 겹침 체크
             const overlap = checkTimeOverlap(time1.시간, time2.시간);
             if (overlap) {
@@ -76,7 +77,7 @@ function getTimeOverlaps() {
                 day: time1.요일,
                 startTime: overlap.start,
                 endTime: overlap.end,
-                courses: [course1.교과목명, course2.교과목명]
+                courses: [course1.교과목명, course2.교과목명],
               });
             }
           }
@@ -84,32 +85,32 @@ function getTimeOverlaps() {
       });
     }
   }
-  
+
   return Array.from(overlaps);
 }
 
 // 두 시간 구간의 겹침 확인
 function checkTimeOverlap(time1, time2) {
-  if (time1 === '미정' || time2 === '미정') return null;
-  
-  const [start1, end1] = time1.split(' ~ ').map(timeToMinutes);
-  const [start2, end2] = time2.split(' ~ ').map(timeToMinutes);
-  
+  if (time1 === "미정" || time2 === "미정") return null;
+
+  const [start1, end1] = time1.split(" ~ ").map(timeToMinutes);
+  const [start2, end2] = time2.split(" ~ ").map(timeToMinutes);
+
   // 겹치는 시간 구간 계산
   const overlapStart = Math.max(start1, start2);
   const overlapEnd = Math.min(end1, end2);
-  
+
   if (overlapStart < overlapEnd) {
     return {
       start: minutesToTime(overlapStart),
-      end: minutesToTime(overlapEnd)
+      end: minutesToTime(overlapEnd),
     };
   }
-  
+
   return null;
 }
 function timeToMinutes(timeString) {
-  const [hour, minute] = timeString.split(':').map(Number);
+  const [hour, minute] = timeString.split(":").map(Number);
   return hour * 60 + minute;
 }
 
@@ -117,7 +118,9 @@ function timeToMinutes(timeString) {
 function minutesToTime(minutes) {
   const hour = Math.floor(minutes / 60);
   const min = minutes % 60;
-  return `${hour.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`;
+  return `${hour.toString().padStart(2, "0")}:${min
+    .toString()
+    .padStart(2, "0")}`;
 }
 
 // 시간을 그리드 위치로 변환 (5분 단위 정밀도)
@@ -127,9 +130,10 @@ function timeToGridPosition(timeString) {
   const [startTime] = timeString.split(" ~ ");
   const startMinutes = timeToMinutes(startTime);
   const gridStartMinutes = 9 * 60; // 9:00 AM을 0으로 기준
-  const gridEndMinutes = 21 * 60;   // 9:00 PM까지
+  const gridEndMinutes = 21 * 60; // 9:00 PM까지
 
-  if (startMinutes < gridStartMinutes || startMinutes > gridEndMinutes) return null;
+  if (startMinutes < gridStartMinutes || startMinutes > gridEndMinutes)
+    return null;
 
   // 5분 단위로 정밀한 위치 계산 (1시간 = 60분 = 12개의 5분 단위)
   return (startMinutes - gridStartMinutes) / 5;
@@ -144,7 +148,7 @@ function getTimeDuration(timeString) {
   const endMinutes = timeToMinutes(endTime);
 
   const durationMinutes = endMinutes - startMinutes;
-  
+
   // 5분 단위로 변환 (최소 1개 단위)
   return Math.max(1, Math.round(durationMinutes / 5));
 }
@@ -191,7 +195,9 @@ function parseCSV(csvText) {
     const row = {};
 
     headers.forEach((header, index) => {
-      row[header.trim()] = values[index] ? values[index].trim().replace(/^"|"$/g, "") : "";
+      row[header.trim()] = values[index]
+        ? values[index].trim().replace(/^"|"$/g, "")
+        : "";
     });
 
     // 시간 매핑 적용
@@ -211,22 +217,22 @@ function parseCSV(csvText) {
   return data;
 }
 
-// CSV 파일 로드 함수 (실제 CSV 파일 우선 읽기)
+// CSV 파일 로드 함수 (실제 CSV 파일 직접 읽기)
 async function loadCSVData() {
-  console.log('CSV 로드 시작...');
-  
-  // 서버/로컬 모든 환경에서 CSV 파일 우선 시도
+  console.log("CSV 로드 시작...");
+
+  // CSV 파일 직접 로드 시도
   const possiblePaths = [
-    './course_schedule_with_section_id.csv',
-    'course_schedule_with_section_id.csv',
-    '/course_schedule_with_section_id.csv'
+    "./course_schedule_with_section_id.csv",
+    "course_schedule_with_section_id.csv",
+    "/course_schedule_with_section_id.csv",
   ];
-  
+
   for (const path of possiblePaths) {
     try {
       console.log(`시도 중인 경로: ${path}`);
       const response = await fetch(path);
-      
+
       if (!response.ok) {
         console.log(`${path} 실패: ${response.status} ${response.statusText}`);
         continue;
@@ -236,66 +242,75 @@ async function loadCSVData() {
       console.log(`파일 크기: ${arrayBuffer.byteLength} bytes`);
 
       if (arrayBuffer.byteLength === 0) {
-        console.log('파일이 비어있습니다.');
+        console.log("파일이 비어있습니다.");
         continue;
       }
 
-      // 인코딩 처리 - UTF-8 먼저 시도, 실패시 EUC-KR
+      // 인코딩 처리 - CP949/EUC-KR 우선, 실패시 UTF-8
       let decodedText;
       try {
-        // UTF-8 시도
-        const decoder = new TextDecoder('utf-8');
+        console.log("CP949 디코딩 시도...");
+        const decoder = new TextDecoder("euc-kr");
         decodedText = decoder.decode(arrayBuffer);
-        
-        // UTF-8로 디코딩된 내용이 한글이 깨진 것 같으면 EUC-KR 시도
-        if (decodedText.includes('�') || decodedText.match(/[^\x00-\x7F가-힣ㄱ-ㅎㅏ-ㅣ]/)) {
-          throw new Error('UTF-8 디코딩 결과 의심스러움');
+
+        // 디코딩 결과 검증 (한글이 깨졌는지 확인)
+        if (
+          decodedText.includes("�") ||
+          (!decodedText.includes("교과목명") && !decodedText.includes("전공"))
+        ) {
+          throw new Error("EUC-KR 디코딩 결과 의심스러움");
         }
-        console.log('UTF-8 디코딩 성공');
+        console.log("✅ EUC-KR 디코딩 성공");
       } catch (error) {
         try {
-          console.log('UTF-8 실패, EUC-KR 시도...');
-          const decoder = new TextDecoder('euc-kr');
+          console.log("EUC-KR 실패, UTF-8 시도...");
+          const decoder = new TextDecoder("utf-8");
           decodedText = decoder.decode(arrayBuffer);
-          console.log('EUC-KR 디코딩 성공');
+          console.log("✅ UTF-8 디코딩 성공");
         } catch (error2) {
-          console.log('모든 인코딩 실패, 기본 UTF-8 사용');
-          const decoder = new TextDecoder('utf-8');
-          decodedText = decoder.decode(arrayBuffer);
+          console.log("모든 인코딩 실패, 기본 디코더 사용");
+          decodedText = new TextDecoder().decode(arrayBuffer);
         }
       }
 
-      console.log('파일 내용 미리보기:', decodedText.substring(0, 200));
+      console.log("파일 내용 미리보기:", decodedText.substring(0, 200));
 
       coursesData = parseCSV(decodedText);
-      console.log('파싱된 데이터:', coursesData.length, '개 항목');
+      console.log("파싱된 데이터:", coursesData.length, "개 항목");
 
       if (coursesData.length === 0) {
-        console.log('파싱된 데이터가 없습니다. 다음 경로 시도...');
+        console.log("파싱된 데이터가 없습니다. 다음 경로 시도...");
         continue;
       }
 
-      console.log('✅ CSV 파일 로드 성공!', path);
+      console.log("✅ CSV 파일 로드 성공!", path);
       setupDataAndUI(`CSV 파일 (${path})`);
       return;
-      
     } catch (error) {
       console.error(`${path} 에러:`, error);
       continue;
     }
   }
-  
+
   // 모든 경로에서 CSV 파일 로드 실패한 경우에만 내장 데이터 사용
-  console.warn('⚠️ CSV 파일 로드 실패, 내장 테스트 데이터로 대체');
-  loadEmbeddedData();
+  console.warn("⚠️ CSV 파일 로드 실패, 내장 테스트 데이터로 대체");
+  document.getElementById("courseList").innerHTML = `
+    <div class="loading-message" style="color: red;">
+      ❌ course_schedule_with_section_id.csv 파일을 찾을 수 없습니다!<br>
+      <small>파일이 같은 폴더에 있는지 확인해주세요.</small><br><br>
+      <button onclick="loadEmbeddedData()" style="padding: 10px 20px; background: #ffa502; color: white; border: none; border-radius: 5px; cursor: pointer;">
+        🧪 테스트 데이터로 시작하기
+      </button>
+    </div>
+  `;
 }
 
 // 내장 데이터 로드 함수
 function loadEmbeddedData() {
-  console.log('내장 데이터 사용');
+  console.log("내장 데이터 사용");
   coursesData = parseCSV(embeddedCSVData);
-  console.log('내장 데이터 파싱 완료:', coursesData.length, '개 항목');
-  setupDataAndUI('내장 데이터');
+  console.log("내장 데이터 파싱 완료:", coursesData.length, "개 항목");
+  setupDataAndUI("내장 데이터");
 }
 
 // 데이터 설정 및 UI 초기화 공통 함수
@@ -303,19 +318,23 @@ function setupDataAndUI(source) {
   groupCoursesBySection();
   initializeFilters();
   renderSchedule();
-  
-  const isEmbedded = source.includes('내장') || source.includes('테스트');
-  const color = isEmbedded ? 'orange' : 'green';
-  const icon = isEmbedded ? '⚠️' : '✅';
-  
+
+  const isEmbedded = source.includes("내장") || source.includes("테스트");
+  const color = isEmbedded ? "orange" : "green";
+  const icon = isEmbedded ? "⚠️" : "✅";
+
   document.getElementById("courseList").innerHTML = `
     <div class="loading-message" style="color: ${color};">
       ${icon} ${coursesData.length}개 과목을 불러왔습니다!<br>
       <small>데이터 소스: ${source}</small>
-      ${isEmbedded ? '<br><br><strong>참고:</strong> CSV 파일을 찾을 수 없어 테스트 데이터를 사용 중입니다.<br>course_schedule_with_section_id.csv 파일이 같은 폴더에 있는지 확인해주세요.' : ''}
+      ${
+        isEmbedded
+          ? "<br><br><strong>참고:</strong> CSV 파일을 찾을 수 없어 테스트 데이터를 사용 중입니다."
+          : ""
+      }
     </div>
   `;
-  
+
   setTimeout(() => {
     updateCourseList();
   }, 1500);
@@ -352,7 +371,8 @@ function groupCoursesBySection() {
   coursesData = Array.from(sectionMap.values());
 
   coursesData.forEach((course) => {
-    course.timesString = course.times.map((t) => `${t.요일} ${t.시간}`).join(", ") || "시간 미정";
+    course.timesString =
+      course.times.map((t) => `${t.요일} ${t.시간}`).join(", ") || "시간 미정";
   });
 }
 
@@ -374,7 +394,9 @@ function initializeFilters() {
   }
 
   // 전공 옵션 추가
-  const majors = [...new Set(coursesData.map((course) => course.전공))].filter(Boolean).sort();
+  const majors = [...new Set(coursesData.map((course) => course.전공))]
+    .filter(Boolean)
+    .sort();
   majors.forEach((major) => {
     const option = document.createElement("option");
     option.value = major;
@@ -383,7 +405,9 @@ function initializeFilters() {
   });
 
   // 이수구분 옵션 추가
-  const courseTypes = [...new Set(coursesData.map((course) => course.이수구분))].filter(Boolean).sort();
+  const courseTypes = [...new Set(coursesData.map((course) => course.이수구분))]
+    .filter(Boolean)
+    .sort();
   courseTypes.forEach((type) => {
     const option = document.createElement("option");
     option.value = type;
@@ -392,7 +416,9 @@ function initializeFilters() {
   });
 
   // 수업방법 옵션 추가
-  const methods = [...new Set(coursesData.map((course) => course.수업방법))].filter(Boolean).sort();
+  const methods = [...new Set(coursesData.map((course) => course.수업방법))]
+    .filter(Boolean)
+    .sort();
   methods.forEach((method) => {
     const option = document.createElement("option");
     option.value = method;
@@ -409,9 +435,11 @@ function filterCourses() {
   const selectedMethod = document.getElementById("methodSelect").value;
 
   filteredCourses = coursesData.filter((course) => {
-    const matchesSearch = !searchTerm || course.교과목명.toLowerCase().includes(searchTerm);
+    const matchesSearch =
+      !searchTerm || course.교과목명.toLowerCase().includes(searchTerm);
     const matchesMajor = !selectedMajor || course.전공 === selectedMajor;
-    const matchesCourseType = !selectedCourseType || course.이수구분 === selectedCourseType;
+    const matchesCourseType =
+      !selectedCourseType || course.이수구분 === selectedCourseType;
     const matchesMethod = !selectedMethod || course.수업방법 === selectedMethod;
 
     return matchesSearch && matchesMajor && matchesCourseType && matchesMethod;
@@ -435,7 +463,9 @@ function updateCourseList() {
     courseItem.className = "course-item";
     courseItem.dataset.sectionId = course.section_id;
 
-    const isSelected = selectedCourses.some((sc) => sc.section_id === course.section_id);
+    const isSelected = selectedCourses.some(
+      (sc) => sc.section_id === course.section_id
+    );
     if (isSelected) {
       courseItem.classList.add("selected");
     }
@@ -456,7 +486,9 @@ function updateCourseList() {
 
 // 과목 선택/해제 토글
 function toggleCourse(course) {
-  const existingIndex = selectedCourses.findIndex((sc) => sc.section_id === course.section_id);
+  const existingIndex = selectedCourses.findIndex(
+    (sc) => sc.section_id === course.section_id
+  );
 
   if (existingIndex >= 0) {
     selectedCourses.splice(existingIndex, 1);
@@ -476,7 +508,8 @@ function updateSelectedCourses() {
   const clearAllBtn = document.getElementById("clearAllBtn");
 
   if (selectedCourses.length === 0) {
-    selectedCoursesDiv.innerHTML = '<div class="loading-message">선택된 과목이 없습니다.</div>';
+    selectedCoursesDiv.innerHTML =
+      '<div class="loading-message">선택된 과목이 없습니다.</div>';
     clearAllBtn.style.display = "none";
     return;
   }
@@ -502,7 +535,9 @@ function updateSelectedCourses() {
 
 // 과목 제거
 function removeCourse(sectionId) {
-  selectedCourses = selectedCourses.filter((course) => course.section_id !== sectionId);
+  selectedCourses = selectedCourses.filter(
+    (course) => course.section_id !== sectionId
+  );
   updateCourseList();
   updateSelectedCourses();
   updateCreditsDisplay();
@@ -520,11 +555,18 @@ function clearAllCourses() {
 
 // 학점 표시 업데이트
 function updateCreditsDisplay() {
-  const totalCredits = selectedCourses.reduce((sum, course) => sum + course.학점, 0);
+  const totalCredits = selectedCourses.reduce(
+    (sum, course) => sum + course.학점,
+    0
+  );
   const courseCount = selectedCourses.length;
 
-  document.getElementById("totalCredits").textContent = `총 학점: ${totalCredits}학점`;
-  document.getElementById("courseCount").textContent = `선택된 과목 수: ${courseCount}개`;
+  document.getElementById(
+    "totalCredits"
+  ).textContent = `총 학점: ${totalCredits}학점`;
+  document.getElementById(
+    "courseCount"
+  ).textContent = `선택된 과목 수: ${courseCount}개`;
 }
 
 // 시간표 렌더링 (5분 단위 정밀도)
@@ -565,29 +607,31 @@ function renderSchedule() {
       if (precisePosition === null) return;
 
       const duration = getTimeDuration(timeInfo.시간);
-      
+
       console.log(`[DEBUG] ${course.교과목명} - ${timeInfo.시간}`);
       console.log(`  정밀위치: ${precisePosition}, 지속시간: ${duration}`);
-      
+
       // 어느 시간 슬롯에 속하는지 계산
       const hourSlot = Math.floor(precisePosition / 12); // 12개의 5분 단위 = 1시간
-      const minuteOffset = (precisePosition % 12) / 12;   // 시간 내에서의 위치 (0~1)
+      const minuteOffset = (precisePosition % 12) / 12; // 시간 내에서의 위치 (0~1)
 
       console.log(`  시간슬롯: ${hourSlot}, 분오프셋: ${minuteOffset}`);
 
       // 해당 셀 찾기
-      const targetCell = scheduleBody.querySelector(`[data-day="${timeInfo.요일}"][data-time="${hourSlot}"]`);
+      const targetCell = scheduleBody.querySelector(
+        `[data-day="${timeInfo.요일}"][data-time="${hourSlot}"]`
+      );
 
       if (targetCell) {
         const courseBlock = document.createElement("div");
         courseBlock.className = "course-block";
         courseBlock.style.backgroundColor = color;
-        
+
         // 5분 단위 정밀 배치
         const cellHeight = 60; // CSS에서 설정된 셀 높이
         const blockHeight = Math.max(15, duration * 5); // 5분당 5px, 최소 15px
         const topOffset = minuteOffset * cellHeight;
-        
+
         courseBlock.style.position = "absolute";
         courseBlock.style.top = `${topOffset}px`;
         courseBlock.style.height = `${blockHeight}px`;
@@ -596,7 +640,12 @@ function renderSchedule() {
         courseBlock.style.zIndex = "10";
 
         // 시간에 따른 폰트 크기 조정
-        const fontSize = blockHeight > 40 ? '0.85rem' : blockHeight > 20 ? '0.75rem' : '0.65rem';
+        const fontSize =
+          blockHeight > 40
+            ? "0.85rem"
+            : blockHeight > 20
+            ? "0.75rem"
+            : "0.65rem";
         courseBlock.style.fontSize = fontSize;
 
         console.log(`  블록높이: ${blockHeight}px, 상단오프셋: ${topOffset}px`);
@@ -604,7 +653,9 @@ function renderSchedule() {
         courseBlock.innerHTML = `
           <div class="course-block-title">${course.교과목명}</div>
           <div class="course-block-professor">${course.교수명}</div>
-          <div class="course-block-time" style="font-size: 0.7em; opacity: 0.8;">${timeInfo.시간.split(' ~ ')[0]}</div>
+          <div class="course-block-time" style="font-size: 0.7em; opacity: 0.8;">${
+            timeInfo.시간.split(" ~ ")[0]
+          }</div>
         `;
 
         targetCell.appendChild(courseBlock);
@@ -630,19 +681,19 @@ function exportSchedule() {
     const courseType = `"${course.이수구분.replace(/"/g, '""')}"`;
     const method = `"${course.수업방법.replace(/"/g, '""')}"`;
     const times = `"${timeString.replace(/"/g, '""')}"`;
-    
+
     csvContent += `${courseName},${professor},${major},${courseType},${course.학점},${method},${times}\n`;
   });
 
   try {
     const BOM = "\uFEFF";
     const csvWithBOM = BOM + csvContent;
-    
+
     const blob = new Blob([csvWithBOM], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
     const fileName = `my_schedule_${new Date().toISOString().slice(0, 10)}.csv`;
-    
+
     link.setAttribute("href", url);
     link.setAttribute("download", fileName);
     link.style.visibility = "hidden";
@@ -650,9 +701,8 @@ function exportSchedule() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    
+
     console.log(`✅ 시간표 CSV 파일 다운로드 완료: ${fileName}`);
-    
   } catch (error) {
     console.error("CSV 내보내기 실패:", error);
     alert("CSV 파일 생성에 실패했습니다.");
@@ -692,14 +742,14 @@ function printSchedule() {
       }
     </style>
   `;
-  
+
   const head = document.head;
-  const printStyleElement = document.createElement('style');
+  const printStyleElement = document.createElement("style");
   printStyleElement.innerHTML = printStyles;
   head.appendChild(printStyleElement);
-  
+
   window.print();
-  
+
   setTimeout(() => {
     head.removeChild(printStyleElement);
   }, 1000);
@@ -707,12 +757,24 @@ function printSchedule() {
 
 // 이벤트 리스너 설정
 function setupEventListeners() {
-  document.getElementById("searchInput").addEventListener("input", updateCourseList);
-  document.getElementById("majorSelect").addEventListener("change", updateCourseList);
-  document.getElementById("courseTypeSelect").addEventListener("change", updateCourseList);
-  document.getElementById("methodSelect").addEventListener("change", updateCourseList);
-  document.getElementById("clearAllBtn").addEventListener("click", clearAllCourses);
-  document.getElementById("exportBtn").addEventListener("click", exportSchedule);
+  document
+    .getElementById("searchInput")
+    .addEventListener("input", updateCourseList);
+  document
+    .getElementById("majorSelect")
+    .addEventListener("change", updateCourseList);
+  document
+    .getElementById("courseTypeSelect")
+    .addEventListener("change", updateCourseList);
+  document
+    .getElementById("methodSelect")
+    .addEventListener("change", updateCourseList);
+  document
+    .getElementById("clearAllBtn")
+    .addEventListener("click", clearAllCourses);
+  document
+    .getElementById("exportBtn")
+    .addEventListener("click", exportSchedule);
   document.getElementById("printBtn").addEventListener("click", printSchedule);
 }
 
