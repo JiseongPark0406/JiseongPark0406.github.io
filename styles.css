@@ -262,6 +262,7 @@ body {
     min-height: 60px;
     position: relative;
     background: white;
+    overflow: visible; /* 정밀한 배치를 위해 overflow 허용 */
 }
 
 .schedule-cell:last-child {
@@ -273,9 +274,8 @@ body {
     left: 2px;
     right: 2px;
     top: 2px;
-    bottom: 2px;
     border-radius: 5px;
-    padding: 0.5rem;
+    padding: 0.3rem;
     font-size: 0.8rem;
     color: white;
     font-weight: bold;
@@ -285,18 +285,33 @@ body {
     justify-content: center;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     overflow: hidden;
+    z-index: 10;
+    transition: transform 0.2s ease;
+}
+
+.course-block:hover {
+    transform: scale(1.02);
+    z-index: 20;
 }
 
 .course-block-title {
-    font-size: 0.85rem;
-    margin-bottom: 0.25rem;
-    line-height: 1.2;
+    font-size: 1em;
+    margin-bottom: 0.2rem;
+    line-height: 1.1;
+    font-weight: bold;
 }
 
 .course-block-professor {
-    font-size: 0.7rem;
+    font-size: 0.8em;
     opacity: 0.9;
     line-height: 1.1;
+}
+
+.course-block-time {
+    font-size: 0.7em;
+    opacity: 0.8;
+    line-height: 1;
+    margin-top: 0.1rem;
 }
 
 .export-section {
