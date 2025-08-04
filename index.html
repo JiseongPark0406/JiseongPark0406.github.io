@@ -1,109 +1,120 @@
 <!DOCTYPE html>
 <html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎓 스마트 시간표 빌더</title>
-    <link rel="stylesheet" href="./styles.css">
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🎓 스마트 시간표 빌더 v0.0.1</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
     <div class="container">
-        <div class="header">
-            <h1>🎓 스마트 시간표 빌더</h1>
-            <p>완벽한 시간표를 만들어보세요!</p>
+      <div class="header">
+        <h1>🎓 스마트 시간표 빌더</h1>
+        <p>완벽한 시간표를 만들어보세요!</p>
+      </div>
+
+      <div class="main-content">
+        <div class="sidebar">
+          <h3>🔍 수업 검색 및 선택</h3>
+
+          <!-- 과목명 검색 -->
+          <div class="form-group">
+            <label for="searchInput">🔍 과목명 검색</label>
+            <input
+              type="text"
+              id="searchInput"
+              class="form-control"
+              placeholder="검색할 과목명을 입력하세요"
+            />
+          </div>
+
+          <!-- 분류 선택 -->
+          <div class="form-group">
+            <label for="categorySelect">📂 분류 선택</label>
+            <select id="categorySelect" class="form-control">
+              <option value="">전체</option>
+            </select>
+          </div>
+
+          <!-- 전공 선택 -->
+          <div class="form-group">
+            <label for="majorSelect">📚 전공 선택</label>
+            <select id="majorSelect" class="form-control">
+              <option value="">전체</option>
+            </select>
+          </div>
+
+          <!-- 수업 선택 -->
+          <div class="form-group">
+            <label>✅ 수업 선택</label>
+            <div id="courseList" class="course-list">
+              <div class="loading-message">데이터를 불러오는 중...</div>
+            </div>
+          </div>
+
+          <!-- 이수구분 필터 -->
+          <div class="form-group">
+            <label for="courseTypeSelect">📖 이수구분 필터</label>
+            <select id="courseTypeSelect" class="form-control">
+              <option value="">전체</option>
+            </select>
+          </div>
+
+          <!-- 수업방법 -->
+          <div class="form-group">
+            <label for="methodSelect">💻 수업방법</label>
+            <select id="methodSelect" class="form-control">
+              <option value="">전체</option>
+            </select>
+          </div>
+
+          <!-- 선택된 과목들 -->
+          <div class="selected-courses">
+            <h4>📋 선택된 과목</h4>
+            <div id="selectedCourses"></div>
+            <button
+              id="clearAllBtn"
+              class="clear-all-btn"
+              style="display: none"
+            >
+              🔄 전체 초기화
+            </button>
+          </div>
         </div>
 
-        <div class="main-content">
-            <div class="sidebar">
-                <h3>🔍 수업 검색 및 선택</h3>
-                
-                <!-- 과목명 검색 -->
-                <div class="form-group">
-                    <label for="searchInput">🔍 과목명 검색</label>
-                    <input type="text" id="searchInput" class="form-control" placeholder="검색할 과목명을 입력하세요">
-                </div>
+        <div class="content">
+          <!-- 학점 표시 -->
+          <div class="credits-display">
+            <h2 id="totalCredits">총 학점: 0학점</h2>
+            <p id="courseCount">선택된 과목 수: 0개</p>
+          </div>
 
-                <!-- 분류 선택 -->
-                <div class="form-group">
-                    <label for="categorySelect">📂 분류 선택</label>
-                    <select id="categorySelect" class="form-control">
-                        <option value="">전체</option>
-                    </select>
-                </div>
-
-                <!-- 전공 선택 -->
-                <div class="form-group">
-                    <label for="majorSelect">📚 전공 선택</label>
-                    <select id="majorSelect" class="form-control">
-                        <option value="">전체</option>
-                    </select>
-                </div>
-
-                <!-- 수업 선택 -->
-                <div class="form-group">
-                    <label>✅ 수업 선택</label>
-                    <div id="courseList" class="course-list">
-                        <div class="loading-message">
-                            데이터를 불러오는 중...
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 이수구분 필터 -->
-                <div class="form-group">
-                    <label for="courseTypeSelect">📖 이수구분 필터</label>
-                    <select id="courseTypeSelect" class="form-control">
-                        <option value="">전체</option>
-                    </select>
-                </div>
-
-                <!-- 수업방법 -->
-                <div class="form-group">
-                    <label for="methodSelect">💻 수업방법</label>
-                    <select id="methodSelect" class="form-control">
-                        <option value="">전체</option>
-                    </select>
-                </div>
-
-                <!-- 선택된 과목들 -->
-                <div class="selected-courses">
-                    <h4>📋 선택된 과목</h4>
-                    <div id="selectedCourses"></div>
-                    <button id="clearAllBtn" class="clear-all-btn" style="display: none;">🔄 전체 초기화</button>
-                </div>
+          <!-- 시간표 -->
+          <div class="schedule-container">
+            <div class="schedule-grid">
+              <div class="schedule-header">
+                <div>시간</div>
+                <div>월</div>
+                <div>화</div>
+                <div>수</div>
+                <div>목</div>
+                <div>금</div>
+              </div>
+              <div id="scheduleBody" class="schedule-body"></div>
             </div>
+          </div>
 
-            <div class="content">
-                <!-- 학점 표시 -->
-                <div class="credits-display">
-                    <h2 id="totalCredits">총 학점: 0학점</h2>
-                    <p id="courseCount">선택된 과목 수: 0개</p>
-                </div>
-
-                <!-- 시간표 -->
-                <div class="schedule-container">
-                    <div class="schedule-grid">
-                        <div class="schedule-header">
-                            <div>시간</div>
-                            <div>월</div>
-                            <div>화</div>
-                            <div>수</div>
-                            <div>목</div>
-                            <div>금</div>
-                        </div>
-                        <div id="scheduleBody" class="schedule-body"></div>
-                    </div>
-                </div>
-
-                <!-- 내보내기 -->
-                <div class="export-section">
-                    <button id="exportBtn" class="export-btn">📤 시간표 내보내기</button>
-                    <button id="printBtn" class="export-btn">🖨️ 인쇄하기</button>
-                </div>
-            </div>
+          <!-- 내보내기 -->
+          <div class="export-section">
+            <button id="exportBtn" class="export-btn">
+              📤 시간표 내보내기
+            </button>
+            <button id="printBtn" class="export-btn">🖨️ 인쇄하기</button>
+          </div>
         </div>
+      </div>
     </div>
 
     <script src="./script.js"></script>
-</body>
+  </body>
 </html>
