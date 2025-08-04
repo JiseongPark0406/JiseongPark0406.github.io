@@ -202,87 +202,23 @@ function groupCoursesBySection() {
   });
 }
 
-// 필터 초기화function initializeFilters() {
-  const categorySelect = document.getElementById("categorySelect"); // '전공' | '교양' | ''(전체)
+// 필터 초기화
+function initializeFilters() {
+  const categorySelect = document.getElementById("categorySelect");
   const majorSelect = document.getElementById("majorSelect");
   const courseTypeSelect = document.getElementById("courseTypeSelect");
   const methodSelect = document.getElementById("methodSelect");
-  const sortOrderSelect = document.getElementById("sortOrderSelect"); // 'asc' | 'desc' (없으면 asc)
 
-  // 안전장치
-  if (!majorSelect || !courseTypeSelect || !methodSelect) return;
-
-  const selectedCategory = (categorySelect && categorySelect.value) || "";
-  const order = (sortOrderSelect && sortOrderSelect.value) || "asc";
-
-  // 분류 판정 보조 (데이터에 '분류'가 없으면 전공명이 '교양' 포함 여부로 판정)
-  const getCategory = (c) => {
-    if (c.분류 && typeof c.분류 === "string" && c.분류.trim() !== "") return c.분류.trim();
-    const mj = (c.전공 || "").trim();
-    return mj.includes("교양") ? "교양" : "전공";
-  };
-
-  // ===== 전공(major) 옵션 구성: 분류 선택 상태 반영 + 정렬 =====
-  const prevMajor = majorSelect.value;
-
-  // 분류 필터 적용 (''이면 전체)
-  let majors = Array.from(
-    new Set(
-      coursesData
-        .filter((c) => !selectedCategory || getCategory(c) === selectedCategory)
-        .map((c) => (c.전공 || "").trim())
-    )
-  ).filter(Boolean);
-
-  // 정렬 (ko-KR 로케일, asc/desc)
-  majors.sort((a, b) =>
-    order === "desc" ? b.localeCompare(a, "ko-KR") : a.localeCompare(b, "ko-KR")
-  );
-
-  // 드롭다운 갱신
-  majorSelect.innerHTML = '<option value="">전체</option>';
-  majors.forEach((m) => {
-    const opt = document.createElement("option");
-    opt.value = m;
-    opt.textContent = m;
-    majorSelect.appendChild(opt);
+  // 분류 옵션 (CSV가 갖고 있는 분류들)
+  const categories = [...new Set(coursesData.map((c) => c.분류))]
+    .filter(Boolean)
+    .sort((a, b) => a.localeCompare(b, "ko-KR"));
+  categories.forEach((category) => {
+    const option = document.createElement("option");
+    option.value = category;
+    option.textContent = category;
+    categorySelect.appendChild(option);
   });
-  // 이전 선택 유지(여전히 유효할 때)
-  majorSelect.value = majors.includes(prevMajor) ? prevMajor : "";
-
-  // ===== 이수구분(courseType) 옵션: 전체 데이터 기준, 오름차순(한글) =====
-  const prevCourseType = courseTypeSelect.value;
-  const courseTypes = Array.from(
-    new Set(coursesData.map((c) => (c.이수구분 || "").trim()))
-  ).filter(Boolean);
-  courseTypes.sort((a, b) => a.localeCompare(b, "ko-KR"));
-
-  courseTypeSelect.innerHTML = '<option value="">전체</option>';
-  courseTypes.forEach((t) => {
-    const opt = document.createElement("option");
-    opt.value = t;
-    opt.textContent = t;
-    courseTypeSelect.appendChild(opt);
-  });
-  courseTypeSelect.value = courseTypes.includes(prevCourseType) ? prevCourseType : "";
-
-  // ===== 수업방법(method) 옵션: 전체 데이터 기준, 오름차순(한글) =====
-  const prevMethod = methodSelect.value;
-  const methods = Array.from(
-    new Set(coursesData.map((c) => (c.수업방법 || "").trim()))
-  ).filter(Boolean);
-  methods.sort((a, b) => a.localeCompare(b, "ko-KR"));
-
-  methodSelect.innerHTML = '<option value="">전체</option>';
-  methods.forEach((m) => {
-    const opt = document.createElement("option");
-    opt.value = m;
-    opt.textContent = m;
-    methodSelect.appendChild(opt);
-  });
-  methodSelect.value = methods.includes(prevMethod) ? prevMethod : "";
-}
-
 
   // 전공 옵션
   const majors = [...new Set(coursesData.map((c) => c.전공))]
