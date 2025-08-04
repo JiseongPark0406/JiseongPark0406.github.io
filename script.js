@@ -52,55 +52,40 @@ for (let hour = 9; hour <= 21; hour++) {
   timeSlots.push(`${hour.toString().padStart(2, "0")}:00`);
 }
 
-// 임시 테스트 데이터
-const testData = `section_id,전공,이수구분,교과목명,학점,교수명,요일,교시/시간,수업방법
-test1,컴퓨터공학과,전필,자료구조,3.0,김교수,월,1-2A,오프라인
-test1,컴퓨터공학과,전필,자료구조,3.0,김교수,수,1-2A,오프라인
-test2,컴퓨터공학과,전선,웹프로그래밍,3.0,박교수,화,7-8A,블렌디드
-test3,산업경영공학과,기교,선형대수,3.0,장교수,목,2B-3,오프라인
-test3,산업경영공학과,기교,선형대수,3.0,장교수,목,4-5A,오프라인
-test4,교양,교필,대학영어,2.0,Smith,금,4-5A,오프라인`;
+// (선택) 샘플 테스트 데이터
+const testData = `section_id,분류,전공,이수구분,교과목명,학점,교수명,요일,교시/시간,수업방법
+test1,전공,컴퓨터공학과,전필,자료구조,3.0,김교수,월,1-2A,오프라인
+test1,전공,컴퓨터공학과,전필,자료구조,3.0,김교수,수,1-2A,오프라인
+test2,전공,컴퓨터공학과,전선,웹프로그래밍,3.0,박교수,화,7-8A,블렌디드
+test3,전공,산업경영공학과,기교,선형대수,3.0,장교수,목,2B-3,오프라인
+test3,전공,산업경영공학과,기교,선형대수,3.0,장교수,목,4-5A,오프라인
+test4,교양,교양학부,교필,대학영어,2.0,Smith,금,4-5A,오프라인`;
 
-// 테스트 데이터 로드 함수
+// (선택) 테스트 데이터 로더
 function loadTestData() {
-  console.log("테스트 데이터 로드 중...");
-
   coursesData = parseCSV(testData);
-  console.log("테스트 데이터 파싱 완료:", coursesData.length, "개 항목");
-
-  // 섹션별로 그룹화
   groupCoursesBySection();
-
-  // UI 초기화
   initializeFilters();
   renderSchedule();
-
   document.getElementById("courseList").innerHTML = `
     <div class="loading-message" style="color: blue;">
       🧪 테스트 데이터로 실행 중<br>
       <small>${coursesData.length}개 과목 (샘플 데이터)</small>
     </div>
   `;
-
-  setTimeout(() => {
-    updateCourseList();
-  }, 1000);
+  setTimeout(updateCourseList, 300);
 }
+
+// CSV 파서
 function parseCSV(csvText) {
   const lines = csvText.trim().split("\n");
-  if (lines.length < 2) {
-    console.error("CSV 파일이 비어있거나 헤더만 있습니다.");
-    return [];
-  }
+  if (lines.length < 2) return [];
 
-  // 헤더 파싱 (쉼표로 분리하되 따옴표 내부 쉼표는 무시)
   const headers = parseCSVLine(lines[0]);
-  console.log("CSV 헤더:", headers);
-
   const data = [];
 
   for (let i = 1; i < lines.length; i++) {
-    if (lines[i].trim() === "") continue; // 빈 줄 건너뛰기
+    if (lines[i].trim() === "") continue;
 
     const values = parseCSVLine(lines[i]);
     const row = {};
@@ -120,16 +105,12 @@ function parseCSV(csvText) {
       row["시간"] = "미정";
     }
 
-    // 유효한 데이터인지 확인
-    if (row.section_id && row.교과목명) {
-      data.push(row);
-    }
+    if (row.section_id && row.교과목명) data.push(row);
   }
-
   return data;
 }
 
-// CSV 라인 파싱 함수 (따옴표 처리)
+// CSV 라인 파싱 (따옴표 처리)
 function parseCSVLine(line) {
   const result = [];
   let current = "";
@@ -137,7 +118,6 @@ function parseCSVLine(line) {
 
   for (let i = 0; i < line.length; i++) {
     const char = line[i];
-
     if (char === '"') {
       inQuotes = !inQuotes;
     } else if (char === "," && !inQuotes) {
@@ -147,72 +127,46 @@ function parseCSVLine(line) {
       current += char;
     }
   }
-
   result.push(current);
   return result;
 }
 
-// CSV 파일 로드 함수 (CP949 인코딩 지원)
+// CSV 파일 로드 (UTF-8 우선, 깨짐 있으면 EUC-KR 재시도)
 async function loadCSVData() {
   try {
     const response = await fetch("./course_schedule_with_section_id.csv");
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    // ArrayBuffer로 받아서 인코딩 처리
     const arrayBuffer = await response.arrayBuffer();
-
-    // CP949 (EUC-KR) 디코딩 시도
-    let decodedText;
-    try {
-      const decoder = new TextDecoder("euc-kr");
-      decodedText = decoder.decode(arrayBuffer);
-    } catch (error) {
-      console.log("EUC-KR 디코딩 실패, UTF-8 시도");
-      const decoder = new TextDecoder("utf-8");
-      decodedText = decoder.decode(arrayBuffer);
+    let decodedText = new TextDecoder("utf-8").decode(arrayBuffer);
+    if (decodedText.includes("�")) {
+      decodedText = new TextDecoder("euc-kr").decode(arrayBuffer);
     }
-
-    console.log("CSV 파일 로드 성공");
-    console.log("첫 100자:", decodedText.substring(0, 100));
 
     coursesData = parseCSV(decodedText);
-    console.log("파싱된 데이터:", coursesData.length, "개 항목");
+    if (coursesData.length === 0) throw new Error("파싱된 데이터가 없습니다.");
 
-    if (coursesData.length === 0) {
-      throw new Error("파싱된 데이터가 없습니다.");
-    }
-
-    // 섹션별로 그룹화
     groupCoursesBySection();
-
-    // UI 초기화
     initializeFilters();
     updateCourseList();
     renderSchedule();
 
     document.getElementById("courseList").innerHTML = `
-            <div class="loading-message" style="color: green;">
-                ${coursesData.length}개 과목을 불러왔습니다!
-            </div>
-        `;
-    setTimeout(() => {
-      updateCourseList();
-    }, 1000);
+      <div class="loading-message" style="color: green;">
+        ${coursesData.length}개 과목을 불러왔습니다!
+      </div>`;
+    setTimeout(updateCourseList, 300);
   } catch (error) {
     console.error("CSV 파일 로드 실패:", error);
     document.getElementById("courseList").innerHTML = `
-            <div class="loading-message" style="color: red;">
-                ❌ 데이터 로드 실패: ${error.message}<br>
-                <small>파일 경로와 인코딩을 확인해주세요.</small>
-            </div>
-        `;
+      <div class="loading-message" style="color: red;">
+        ❌ 데이터 로드 실패: ${error.message}<br>
+        <small>파일 경로와 인코딩을 확인해주세요.</small>
+      </div>`;
   }
 }
 
-// 섹션별로 과목 그룹화
+// 섹션(수업 묶음)으로 그룹화
 function groupCoursesBySection() {
   const sectionMap = new Map();
 
@@ -241,10 +195,7 @@ function groupCoursesBySection() {
     }
   });
 
-  // 그룹화된 데이터를 배열로 변환
   coursesData = Array.from(sectionMap.values());
-
-  // 시간 정보를 문자열로 변환
   coursesData.forEach((course) => {
     course.timesString =
       course.times.map((t) => `${t.요일} ${t.시간}`).join(", ") || "시간 미정";
@@ -258,10 +209,10 @@ function initializeFilters() {
   const courseTypeSelect = document.getElementById("courseTypeSelect");
   const methodSelect = document.getElementById("methodSelect");
 
-  // 분류 옵션 추가
-  const categories = [...new Set(coursesData.map((course) => course.분류))]
+  // 분류 옵션 (CSV가 갖고 있는 분류들)
+  const categories = [...new Set(coursesData.map((c) => c.분류))]
     .filter(Boolean)
-    .sort();
+    .sort((a, b) => a.localeCompare(b, "ko-KR"));
   categories.forEach((category) => {
     const option = document.createElement("option");
     option.value = category;
@@ -269,21 +220,21 @@ function initializeFilters() {
     categorySelect.appendChild(option);
   });
 
-  // 전공 옵션 추가
-  const majors = [...new Set(coursesData.map((course) => course.전공))]
+  // 전공 옵션
+  const majors = [...new Set(coursesData.map((c) => c.전공))]
     .filter(Boolean)
-    .sort();
+    .sort((a, b) => a.localeCompare(b, "ko-KR"));
   majors.forEach((major) => {
     const option = document.createElement("option");
-    option.value = major;
+    option.value = major; // 반드시 전공 문자열로
     option.textContent = major;
     majorSelect.appendChild(option);
   });
 
-  // 이수구분 옵션 추가
-  const courseTypes = [...new Set(coursesData.map((course) => course.이수구분))]
+  // 이수구분 옵션
+  const courseTypes = [...new Set(coursesData.map((c) => c.이수구분))]
     .filter(Boolean)
-    .sort();
+    .sort((a, b) => a.localeCompare(b, "ko-KR"));
   courseTypes.forEach((type) => {
     const option = document.createElement("option");
     option.value = type;
@@ -291,10 +242,10 @@ function initializeFilters() {
     courseTypeSelect.appendChild(option);
   });
 
-  // 수업방법 옵션 추가
-  const methods = [...new Set(coursesData.map((course) => course.수업방법))]
+  // 수업방법 옵션
+  const methods = [...new Set(coursesData.map((c) => c.수업방법))]
     .filter(Boolean)
-    .sort();
+    .sort((a, b) => a.localeCompare(b, "ko-KR"));
   methods.forEach((method) => {
     const option = document.createElement("option");
     option.value = method;
@@ -306,10 +257,10 @@ function initializeFilters() {
 // 과목 필터링
 function filterCourses() {
   const searchTerm = document.getElementById("searchInput").value.toLowerCase();
+  const selectedCategory = document.getElementById("categorySelect").value;
   const selectedMajor = document.getElementById("majorSelect").value;
   const selectedCourseType = document.getElementById("courseTypeSelect").value;
   const selectedMethod = document.getElementById("methodSelect").value;
-  const selectedCategory = document.getElementById("categorySelect").value;
 
   filteredCourses = coursesData.filter((course) => {
     const matchesCategory =
@@ -338,10 +289,9 @@ function updateCourseList() {
 
   if (filteredCourses.length === 0) {
     courseList.innerHTML = `
-            <div class="loading-message">
-                검색 조건에 맞는 과목이 없습니다.
-            </div>
-        `;
+      <div class="loading-message">
+        검색 조건에 맞는 과목이 없습니다.
+      </div>`;
     return;
   }
 
@@ -360,13 +310,13 @@ function updateCourseList() {
     }
 
     courseItem.innerHTML = `
-            <div class="course-name">${course.교과목명} (${course.학점}학점)</div>
-            <div class="course-details">
-                👨‍🏫 ${course.교수명} | ${course.이수구분} | ${course.전공}<br>
-                📅 ${course.timesString}<br>
-                💻 ${course.수업방법}
-            </div>
-        `;
+      <div class="course-name">${course.교과목명} (${course.학점}학점)</div>
+      <div class="course-details">
+        👨‍🏫 ${course.교수명} | ${course.이수구분} | ${course.전공}<br>
+        📅 ${course.timesString}<br>
+        💻 ${course.수업방법}
+      </div>
+    `;
 
     courseItem.addEventListener("click", () => toggleCourse(course));
     courseList.appendChild(courseItem);
@@ -411,12 +361,12 @@ function updateSelectedCourses() {
     courseCard.className = "selected-course-card";
 
     courseCard.innerHTML = `
-            <div class="selected-course-info">
-                <div class="selected-course-title">${course.교과목명} (${course.학점}학점)</div>
-                <div class="selected-course-details">${course.교수명} | ${course.전공}</div>
-            </div>
-            <button class="remove-btn" onclick="removeCourse('${course.section_id}')">❌</button>
-        `;
+      <div class="selected-course-info">
+        <div class="selected-course-title">${course.교과목명} (${course.학점}학점)</div>
+        <div class="selected-course-details">${course.교수명} | ${course.전공}</div>
+      </div>
+      <button class="remove-btn" onclick="removeCourse('${course.section_id}')">❌</button>
+    `;
 
     selectedCoursesDiv.appendChild(courseCard);
   });
@@ -458,33 +408,16 @@ function updateCreditsDisplay() {
   ).textContent = `선택된 과목 수: ${courseCount}개`;
 }
 
-// 시간을 그리드 위치로 변환
+// 시간을 그리드 위치로 변환 (시 기준)
 function timeToGridPosition(timeString) {
   if (!timeString || timeString === "미정") return null;
-
   const [startTime] = timeString.split(" ~ ");
-  const [hour, minute] = startTime.split(":").map(Number);
-
+  const [hour] = startTime.split(":").map(Number);
   if (hour < 9 || hour > 21) return null;
-
   return hour - 9;
 }
 
-// 시간 지속시간 계산
-function getTimeDuration(timeString) {
-  if (!timeString || timeString === "미정") return 1;
-
-  const [startTime, endTime] = timeString.split(" ~ ");
-  const [startHour, startMinute] = startTime.split(":").map(Number);
-  const [endHour, endMinute] = endTime.split(":").map(Number);
-
-  const startMinutes = startHour * 60 + startMinute;
-  const endMinutes = endHour * 60 + endMinute;
-
-  return Math.max(1, Math.ceil((endMinutes - startMinutes) / 60));
-}
-
-// 시간표 렌더링
+// 시간표 렌더링 (분 단위 배치 + 겹침 표시)
 function renderSchedule() {
   const scheduleBody = document.getElementById("scheduleBody");
   scheduleBody.innerHTML = "";
@@ -493,14 +426,12 @@ function renderSchedule() {
 
   // 그리드 생성
   timeSlots.forEach((timeSlot, timeIndex) => {
-    // 시간 슬롯
     const timeSlotDiv = document.createElement("div");
     timeSlotDiv.className = "time-slot";
     timeSlotDiv.textContent = timeSlot;
     scheduleBody.appendChild(timeSlotDiv);
 
-    // 각 요일별 셀
-    days.forEach((day, dayIndex) => {
+    days.forEach((day) => {
       const cellDiv = document.createElement("div");
       cellDiv.className = "schedule-cell";
       cellDiv.dataset.day = day;
@@ -509,42 +440,87 @@ function renderSchedule() {
     });
   });
 
-  // 선택된 과목들을 시간표에 배치
+  // 겹침 판별용 수집 배열 및 헬퍼
+  const blocks = [];
+  const toMinutes = (hhmm) => {
+    const [h, m] = hhmm.split(":").map(Number);
+    return h * 60 + m;
+  };
+  const getStartEnd = (timeRange) => {
+    const [s, e] = timeRange.split(" ~ ").map((t) => t.trim());
+    return [toMinutes(s), toMinutes(e)];
+  };
+
+  // 선택된 과목들을 시간표에 배치 (분 단위 top/height)
   selectedCourses.forEach((course, courseIndex) => {
     const color = colors[courseIndex % colors.length];
 
     course.times.forEach((timeInfo) => {
-      const dayIndex = days.indexOf(timeInfo.요일);
-      if (dayIndex === -1) return;
+      const [startTime, endTime] = timeInfo.시간
+        .split(" ~ ")
+        .map((s) => s.trim());
+      if (!startTime || !endTime) return;
 
-      const gridPosition = timeToGridPosition(timeInfo.시간);
-      if (gridPosition === null) return;
+      const [sh, sm] = startTime.split(":").map(Number);
+      const [eh, em] = endTime.split(":").map(Number);
 
-      const duration = getTimeDuration(timeInfo.시간);
+      const gridPosition = sh - 9; // 09:00이 0행
+      if (gridPosition < 0 || gridPosition > 12) return;
 
-      // 해당 셀 찾기
       const targetCell = scheduleBody.querySelector(
         `[data-day="${timeInfo.요일}"][data-time="${gridPosition}"]`
       );
+      if (!targetCell) return;
 
-      if (targetCell) {
-        const courseBlock = document.createElement("div");
-        courseBlock.className = "course-block";
-        courseBlock.style.backgroundColor = color;
-        courseBlock.style.height = `${duration * 60 - 4}px`;
+      // 1분 = 1px (셀 높이가 60px → 60분)
+      const startOffsetPx = sm; // 시작 분 오프셋
+      const totalMinutes = eh * 60 + em - (sh * 60 + sm);
+      const blockHeightPx = Math.max(1, totalMinutes) - 4; // 여백
 
-        courseBlock.innerHTML = `
-                    <div class="course-block-title">${course.교과목명}</div>
-                    <div class="course-block-professor">${course.교수명}</div>
-                `;
+      const courseBlock = document.createElement("div");
+      courseBlock.className = "course-block";
+      courseBlock.style.backgroundColor = color;
+      courseBlock.style.top = `${2 + startOffsetPx}px`; // 시작 분 반영
+      courseBlock.style.height = `${blockHeightPx}px`; // 분 단위 높이
+      courseBlock.innerHTML = `
+        <div class="course-block-title">${course.교과목명}</div>
+        <div class="course-block-professor">${course.교수명}</div>
+      `;
 
-        targetCell.appendChild(courseBlock);
-      }
+      targetCell.appendChild(courseBlock);
+
+      // 겹침 판별 메타 저장
+      const [startMin, endMin] = getStartEnd(timeInfo.시간);
+      courseBlock.dataset.day = timeInfo.요일;
+      courseBlock.dataset.start = String(startMin);
+      courseBlock.dataset.end = String(endMin);
+      blocks.push(courseBlock);
     });
+  });
+
+  // 같은 요일 내 시간 구간이 겹치면 conflict 추가
+  const byDay = {};
+  blocks.forEach((b) => {
+    const d = b.dataset.day;
+    (byDay[d] ||= []).push(b);
+  });
+
+  Object.values(byDay).forEach((list) => {
+    list.sort((a, b) => Number(a.dataset.start) - Number(b.dataset.start));
+    for (let i = 0; i < list.length; i++) {
+      for (let j = i + 1; j < list.length; j++) {
+        if (Number(list[j].dataset.start) < Number(list[i].dataset.end)) {
+          list[i].classList.add("conflict");
+          list[j].classList.add("conflict");
+        } else {
+          break;
+        }
+      }
+    }
   });
 }
 
-// 시간표 내보내기
+// 시간표 내보내기 (UTF-8 BOM 추가로 Excel 깨짐 방지)
 function exportSchedule() {
   if (selectedCourses.length === 0) {
     alert("선택된 과목이 없습니다.");
@@ -558,7 +534,10 @@ function exportSchedule() {
     csvContent += `"${course.교과목명}","${course.교수명}","${course.전공}","${course.이수구분}",${course.학점},"${course.수업방법}","${timeString}"\n`;
   });
 
-  const blob = new Blob([csvContent], { type: "text/csv;charset=cp949;" });
+  const BOM = "\uFEFF";
+  const blob = new Blob([BOM + csvContent], {
+    type: "text/csv;charset=utf-8;",
+  });
   const link = document.createElement("a");
   const url = URL.createObjectURL(blob);
 
@@ -582,41 +561,11 @@ function printSchedule() {
 // 이벤트 리스너 설정
 function setupEventListeners() {
   // 검색 입력
-  document.getElementById("categorySelect").addEventListener("change", () => {
-    const category = document.getElementById("categorySelect").value; // '전공' | '교양' | ''
-    const majorSelect = document.getElementById("majorSelect");
-    const prev = majorSelect.value; // 이전 선택 기억
-
-    // 분류에 맞는 전공만 추출해 옵션 다시 구성
-    const majors = [
-      ...new Set(
-        coursesData
-          .filter((c) => !category || c.분류 === category)
-          .map((c) => c.전공)
-      ),
-    ]
-      .filter(Boolean)
-      .sort();
-
-    majorSelect.innerHTML = '<option value="">전체</option>';
-    majors.forEach((m) => {
-      const opt = document.createElement("option");
-      opt.value = m;
-      opt.textContent = m;
-      majorSelect.appendChild(opt);
-    });
-
-    // 이전 선택 유지(여전히 유효할 때만), 아니면 '전체'
-    majorSelect.value = majors.includes(prev) ? prev : "";
-
-    // 전공 옵션이 바뀌었으니 목록도 즉시 갱신
-    updateCourseList();
-  });
+  document
+    .getElementById("searchInput")
+    .addEventListener("input", updateCourseList);
 
   // 필터 선택
-  document
-    .getElementById("categorySelect")
-    .addEventListener("change", updateCourseList);
   document
     .getElementById("majorSelect")
     .addEventListener("change", updateCourseList);
@@ -626,6 +575,34 @@ function setupEventListeners() {
   document
     .getElementById("methodSelect")
     .addEventListener("change", updateCourseList);
+
+  // 분류 변경 시: 전공 옵션 재구성(함수 없이 인라인) + 목록 갱신
+  document.getElementById("categorySelect").addEventListener("change", () => {
+    const category = document.getElementById("categorySelect").value; // '', '전공', '교양' 등
+    const majorSelect = document.getElementById("majorSelect");
+    const prev = majorSelect.value;
+
+    const majors = [
+      ...new Set(
+        coursesData
+          .filter((c) => !category || c.분류 === category)
+          .map((c) => c.전공)
+      ),
+    ]
+      .filter(Boolean)
+      .sort((a, b) => a.localeCompare(b, "ko-KR"));
+
+    majorSelect.innerHTML = '<option value="">전체</option>';
+    majors.forEach((m) => {
+      const opt = document.createElement("option");
+      opt.value = m;
+      opt.textContent = m;
+      majorSelect.appendChild(opt);
+    });
+
+    majorSelect.value = majors.includes(prev) ? prev : "";
+    updateCourseList();
+  });
 
   // 전체 초기화 버튼
   document
@@ -642,5 +619,5 @@ function setupEventListeners() {
 // 페이지 로드 시 초기화
 document.addEventListener("DOMContentLoaded", function () {
   setupEventListeners();
-  loadCSVData();
+  loadCSVData(); // 필요 시 loadTestData()로 교체하여 샘플로 테스트
 });
