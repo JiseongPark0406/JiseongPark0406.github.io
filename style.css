@@ -1,0 +1,402 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    overflow: hidden;
+}
+
+.header {
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    text-align: center;
+    padding: 2rem;
+}
+
+.header h1 {
+    margin-bottom: 0.5rem;
+    font-size: 2.5rem;
+}
+
+.main-content {
+    display: flex;
+    min-height: 80vh;
+}
+
+.sidebar {
+    width: 350px;
+    background: #f8f9fa;
+    padding: 2rem;
+    border-right: 1px solid #e0e0e0;
+    overflow-y: auto;
+    max-height: 80vh;
+}
+
+.content {
+    flex: 1;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+    color: #333;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.course-list {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    background: white;
+}
+
+.course-item {
+    padding: 1rem;
+    border-bottom: 1px solid #e0e0e0;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.course-item:hover {
+    background-color: #f0f0f0;
+}
+
+.course-item.selected {
+    background-color: #667eea;
+    color: white;
+}
+
+.course-item:last-child {
+    border-bottom: none;
+}
+
+.course-name {
+    font-weight: bold;
+    margin-bottom: 0.25rem;
+    font-size: 1rem;
+}
+
+.course-details {
+    font-size: 0.85rem;
+    opacity: 0.8;
+    line-height: 1.4;
+}
+
+.loading-message {
+    padding: 2rem;
+    text-align: center;
+    color: #666;
+    font-style: italic;
+}
+
+.selected-courses {
+    margin-top: 2rem;
+}
+
+.selected-course-card {
+    background: #333;
+    color: white;
+    padding: 1rem;
+    margin-bottom: 0.5rem;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.selected-course-info {
+    flex: 1;
+}
+
+.selected-course-title {
+    font-weight: bold;
+    margin-bottom: 0.25rem;
+}
+
+.selected-course-details {
+    font-size: 0.85rem;
+    opacity: 0.8;
+}
+
+.remove-btn {
+    background: #ff4757;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.3s;
+}
+
+.remove-btn:hover {
+    background: #ff3838;
+}
+
+.clear-all-btn {
+    background: #ffa502;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 1rem;
+    font-size: 1rem;
+    transition: background-color 0.3s;
+}
+
+.clear-all-btn:hover {
+    background: #ff9500;
+}
+
+.credits-display {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 10px;
+    text-align: center;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.credits-display h2 {
+    margin-bottom: 0.5rem;
+    font-size: 1.8rem;
+}
+
+.schedule-container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    overflow: auto;
+}
+
+.schedule-grid {
+    border: 2px solid #333;
+    border-radius: 10px;
+    overflow: hidden;
+    background: white;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    min-width: 800px;
+}
+
+.schedule-header {
+    display: grid;
+    grid-template-columns: 80px repeat(5, 1fr);
+    background: #333;
+    color: white;
+}
+
+.schedule-header div {
+    padding: 1rem;
+    text-align: center;
+    font-weight: bold;
+    border-right: 1px solid #555;
+    font-size: 1.1rem;
+}
+
+.schedule-header div:last-child {
+    border-right: none;
+}
+
+.schedule-body {
+    display: grid;
+    grid-template-columns: 80px repeat(5, 1fr);
+}
+
+.time-slot {
+    border-right: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
+    padding: 0.5rem;
+    text-align: center;
+    font-size: 0.85rem;
+    background: #f8f9fa;
+    font-weight: bold;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.schedule-cell {
+    border-right: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
+    min-height: 60px;
+    position: relative;
+    background: white;
+}
+
+.schedule-cell:last-child {
+    border-right: none;
+}
+
+.course-block {
+    position: absolute;
+    left: 2px;
+    right: 2px;
+    top: 2px;
+    bottom: 2px;
+    border-radius: 5px;
+    padding: 0.5rem;
+    font-size: 0.8rem;
+    color: white;
+    font-weight: bold;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    overflow: hidden;
+}
+
+.course-block-title {
+    font-size: 0.85rem;
+    margin-bottom: 0.25rem;
+    line-height: 1.2;
+}
+
+.course-block-professor {
+    font-size: 0.7rem;
+    opacity: 0.9;
+    line-height: 1.1;
+}
+
+.export-section {
+    margin-top: 2rem;
+    text-align: center;
+    padding-top: 2rem;
+    border-top: 1px solid #e0e0e0;
+}
+
+.export-btn {
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    margin: 0 0.5rem;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.export-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+    
+    .main-content {
+        flex-direction: column;
+    }
+    
+    .sidebar {
+        width: 100%;
+        max-height: none;
+    }
+    
+    .schedule-container {
+        overflow-x: auto;
+    }
+    
+    .schedule-grid {
+        min-width: 600px;
+    }
+    
+    .header h1 {
+        font-size: 2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .header {
+        padding: 1rem;
+    }
+    
+    .header h1 {
+        font-size: 1.5rem;
+    }
+    
+    .sidebar, .content {
+        padding: 1rem;
+    }
+    
+    .export-btn {
+        display: block;
+        width: 100%;
+        margin: 0.5rem 0;
+    }
+}
+
+/* 인쇄 스타일 */
+@media print {
+    body {
+        background: white;
+        padding: 0;
+    }
+    
+    .container {
+        box-shadow: none;
+        border-radius: 0;
+    }
+    
+    .sidebar {
+        display: none;
+    }
+    
+    .export-section {
+        display: none;
+    }
+    
+    .schedule-container {
+        align-items: flex-start;
+    }
+    
+    .schedule-grid {
+        width: 100%;
+        min-width: auto;
+    }
+}
