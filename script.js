@@ -29,7 +29,40 @@ for (let hour = 9; hour <= 21; hour++) {
     timeSlots.push(`${hour.toString().padStart(2, '0')}:00`);
 }
 
-// CSV 파싱 함수 (개선된 버전)
+// 임시 테스트 데이터
+const testData = `section_id,전공,이수구분,교과목명,학점,교수명,요일,교시/시간,수업방법
+test1,컴퓨터공학과,전필,자료구조,3.0,김교수,월,1-2A,오프라인
+test1,컴퓨터공학과,전필,자료구조,3.0,김교수,수,1-2A,오프라인
+test2,컴퓨터공학과,전선,웹프로그래밍,3.0,박교수,화,7-8A,블렌디드
+test3,산업경영공학과,기교,선형대수,3.0,장교수,목,2B-3,오프라인
+test3,산업경영공학과,기교,선형대수,3.0,장교수,목,4-5A,오프라인
+test4,교양,교필,대학영어,2.0,Smith,금,4-5A,오프라인`;
+
+// 테스트 데이터 로드 함수
+function loadTestData() {
+  console.log('테스트 데이터 로드 중...');
+  
+  coursesData = parseCSV(testData);
+  console.log('테스트 데이터 파싱 완료:', coursesData.length, '개 항목');
+  
+  // 섹션별로 그룹화
+  groupCoursesBySection();
+  
+  // UI 초기화
+  initializeFilters();
+  renderSchedule();
+  
+  document.getElementById("courseList").innerHTML = `
+    <div class="loading-message" style="color: blue;">
+      🧪 테스트 데이터로 실행 중<br>
+      <small>${coursesData.length}개 과목 (샘플 데이터)</small>
+    </div>
+  `;
+  
+  setTimeout(() => {
+    updateCourseList();
+  }, 1000);
+}
 function parseCSV(csvText) {
     const lines = csvText.trim().split('\n');
     if (lines.length < 2) {
