@@ -417,3 +417,35 @@ body {
   }
 }
 
+
+/* 🔒 드래그할 때만 보이는 방문 카운터 */
+.hidden-visit-counter {
+  color: #fff;                 /* 평소엔 흰 글자 → 흰 배경과 동일해서 안 보임 */
+  user-select: text;           /* 드래그 허용 */
+  pointer-events: none;        /* 클릭 방해 X */
+  font-size: 12px;
+  line-height: 1.2;
+  white-space: pre;            /* 줄바꿈/공백 유지 (원하면 normal로) */
+  opacity: 1;
+}
+
+/* 드래그(선택) 시 글자색/배경 지정 → 읽기 쉽게 */
+.hidden-visit-counter::selection {
+  color: #000;
+  background: #cfe8ff;
+}
+
+/* 사이드바 하단에 배치(필요 시 조정) */
+.sidebar .hidden-visit-counter {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 8px;
+}
+
+/* 혹시 .sidebar가 없으면 body 고정 하단-좌측에 작게 표시(역시 드래그해야 보임) */
+.hidden-visit-counter.fixed-fallback {
+  position: fixed;
+  left: 10px;
+  bottom: 8px;
+}
