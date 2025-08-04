@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV 로드 테스트</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .log {
+            background: #f5f5f5;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .error { background: #ffe6e6; }
+        .success { background: #e6ffe6; }
+    </style>
+</head>
+<body>
+    <h1>CSV 파일 로드 테스트</h1>
+    <button onclick="testLoadCSV()">CSV 파일 테스트</button>
+    <div id="output"></div>
+
+    <script>
+        function log(message, type = 'log') {
+            const output = document.getElementById('output');
+            const div = document.createElement('div');
+            div.className = `log ${type}`;
+            div.textContent = new Date().toLocaleTimeString() + ': ' + message;
+            output.appendChild(div);
+            console.log(message);
+        }
+
+        async function testLoadCSV() {
+            document.getElementById('output').innerHTML = '';
+            log('CSV 파일 로드 테스트 시작...');
+
+            try {
+                // 1. 파일 존재 확인
+                log('1. 파일 요청 시작...');
+                const response = await fetch('./course_schedule_with_section_id.csv');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                log('2. HTTP 응답 성공', 'success');
+                log(`   - Status: ${response.status}`);
+                log(`   - Content-Type: ${response.headers.get('content-type')}`);
+                
+                // 2. ArrayBuffer로 읽기
+                const arrayBuffer = await response.arrayBuffer();
+                log(`3. ArrayBuffer 크기: ${arrayBuffer.byteLength} bytes`);
+                
+                // 3. EUC-KR 디코딩 시도
+                let decodedText;
+                try {
+                    const decoder = new TextDecoder('euc-kr');
+                    decodedText = decoder.decode(arrayBuffer);
+                    log('4. EUC-KR 디코딩 성공', 'success');
+                } catch (error) {
+                    log('4. EUC-KR 디코딩 실패, UTF-8 시도');
+                    const decoder = new TextDecoder('utf-8');
+                    decodedText = decoder.decode(arrayBuffer);
+                    log('   UTF-8 디코딩 사용', 'success');
+                }
+                
+                // 4. 내용 미리보기
+                const lines = decodedText.split('\n');
+                log(`5. 총 라인 수: ${lines.length}`);
+                log(`6. 첫 번째 라인 (헤더): ${lines[0]}`);
+                log(`7. 두 번째 라인 (데이터): ${lines[1] || '없음'}`);
+                
+                // 5. 헤더 파싱 테스트
+                const headers = lines[0].split(',');
+                log(`8. 파싱된 헤더 (${headers.length}개): ${headers.join(' | ')}`);
+                
+                if (lines.length > 1) {
+                    log('✅ CSV 파일 로드 성공!', 'success');
+                } else {
+                    log('⚠️ 데이터가 없는 것 같습니다.', 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ 오류 발생: ${error.message}`, 'error');
+                log(`상세 정보: ${error.stack}`, 'error');
+            }
+        }
+
+        // 페이지 로드 시 자동 테스트
+        window.addEventListener('load', testLoadCSV);
+    </script>
+</body>
+</html>
