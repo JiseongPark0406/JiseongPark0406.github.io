@@ -221,6 +221,7 @@ function groupCoursesBySection() {
     if (!sectionMap.has(sectionId)) {
       sectionMap.set(sectionId, {
         section_id: sectionId,
+        분류: course.분류,
         전공: course.전공,
         이수구분: course.이수구분,
         교과목명: course.교과목명,
@@ -252,9 +253,21 @@ function groupCoursesBySection() {
 
 // 필터 초기화
 function initializeFilters() {
+  const categorySelect = document.getElementById("categorySelect");
   const majorSelect = document.getElementById("majorSelect");
   const courseTypeSelect = document.getElementById("courseTypeSelect");
   const methodSelect = document.getElementById("methodSelect");
+
+  // 분류 옵션 추가
+  const categories = [...new Set(coursesData.map((course) => course.분류))]
+    .filter(Boolean)
+    .sort();
+  categories.forEach((category) => {
+    const option = document.createElement("option");
+    option.value = category;
+    option.textContent = category;
+    categorySelect.appendChild(option);
+  });
 
   // 전공 옵션 추가
   const majors = [...new Set(coursesData.map((course) => course.전공))]
@@ -296,8 +309,11 @@ function filterCourses() {
   const selectedMajor = document.getElementById("majorSelect").value;
   const selectedCourseType = document.getElementById("courseTypeSelect").value;
   const selectedMethod = document.getElementById("methodSelect").value;
+  const selectedCategory = document.getElementById("categorySelect").value;
 
   filteredCourses = coursesData.filter((course) => {
+    const matchesCategory =
+      !selectedCategory || course.분류 === selectedCategory;
     const matchesSearch =
       !searchTerm || course.교과목명.toLowerCase().includes(searchTerm);
     const matchesMajor = !selectedMajor || course.전공 === selectedMajor;
@@ -305,7 +321,13 @@ function filterCourses() {
       !selectedCourseType || course.이수구분 === selectedCourseType;
     const matchesMethod = !selectedMethod || course.수업방법 === selectedMethod;
 
-    return matchesSearch && matchesMajor && matchesCourseType && matchesMethod;
+    return (
+      matchesSearch &&
+      matchesMajor &&
+      matchesCourseType &&
+      matchesMethod &&
+      matchesCategory
+    );
   });
 }
 
@@ -536,7 +558,7 @@ function exportSchedule() {
     csvContent += `"${course.교과목명}","${course.교수명}","${course.전공}","${course.이수구분}",${course.학점},"${course.수업방법}","${timeString}"\n`;
   });
 
-  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const blob = new Blob([csvContent], { type: "text/csv;charset=cp949;" });
   const link = document.createElement("a");
   const url = URL.createObjectURL(blob);
 
@@ -560,11 +582,41 @@ function printSchedule() {
 // 이벤트 리스너 설정
 function setupEventListeners() {
   // 검색 입력
-  document
-    .getElementById("searchInput")
-    .addEventListener("input", updateCourseList);
+  document.getElementById("categorySelect").addEventListener("change", () => {
+    const category = document.getElementById("categorySelect").value; // '전공' | '교양' | ''
+    const majorSelect = document.getElementById("majorSelect");
+    const prev = majorSelect.value; // 이전 선택 기억
+
+    // 분류에 맞는 전공만 추출해 옵션 다시 구성
+    const majors = [
+      ...new Set(
+        coursesData
+          .filter((c) => !category || c.분류 === category)
+          .map((c) => c.전공)
+      ),
+    ]
+      .filter(Boolean)
+      .sort();
+
+    majorSelect.innerHTML = '<option value="">전체</option>';
+    majors.forEach((m) => {
+      const opt = document.createElement("option");
+      opt.value = m;
+      opt.textContent = m;
+      majorSelect.appendChild(opt);
+    });
+
+    // 이전 선택 유지(여전히 유효할 때만), 아니면 '전체'
+    majorSelect.value = majors.includes(prev) ? prev : "";
+
+    // 전공 옵션이 바뀌었으니 목록도 즉시 갱신
+    updateCourseList();
+  });
 
   // 필터 선택
+  document
+    .getElementById("categorySelect")
+    .addEventListener("change", updateCourseList);
   document
     .getElementById("majorSelect")
     .addEventListener("change", updateCourseList);
