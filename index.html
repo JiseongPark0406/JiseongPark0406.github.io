@@ -4,47 +4,53 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>🎓 스마트 시간표 빌더</title>
+
+    <!-- 스타일 -->
     <link rel="stylesheet" href="./styles.css" />
+
+    <!-- 라이브러리 & 메인 스크립트 (순서 중요) -->
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+    <script src="./script.js" defer></script>
   </head>
   <body>
     <div class="container">
-      <div class="header">
-        <h1>🎓 스마트 시간표 빌더 v0.2.0</h1>
+      <!-- ================ 헤더 ================ -->
+      <header class="header">
+        <h1>🎓 스마트 시간표 빌더 v0.1.1</h1>
         <p>완벽한 시간표를 만들어보세요!</p>
-      </div>
+      </header>
 
-      <div class="main-content">
-        <!-- ===== 사이드바 ===== -->
-        <div class="sidebar">
+      <!-- =============== 본문 ================ -->
+      <main class="main-content">
+        <!-- ------- 사이드바 ------- -->
+        <aside class="sidebar">
           <!-- 1. 과목명 검색 -->
           <div class="form-group">
             <label for="searchInput">🔍 과목명 검색</label>
             <input
-              type="text"
               id="searchInput"
               class="form-control"
               placeholder="검색할 과목명을 입력하세요"
             />
           </div>
 
-          <!-- 2. 분류 선택 (전공/교양/기초교양) -->
+          <!-- 2. 분류 선택 -->
           <div class="form-group">
-            <label for="categorySelect">📂 분류 선택</label>
+            <label for="categorySelect">📂 분류</label>
             <select id="categorySelect" class="form-control">
               <option value="">전체</option>
             </select>
           </div>
 
-          <!-- 3. 전공 선택 - 분류에 따라 옵션 재구성 -->
+          <!-- 3. 전공 선택 -->
           <div class="form-group">
-            <label for="majorSelect">📚 전공 선택</label>
+            <label for="majorSelect">📚 전공</label>
             <select id="majorSelect" class="form-control">
               <option value="">전체</option>
             </select>
           </div>
 
-          <!-- 4. 세부 필터: 이수구분 -->
+          <!-- 4. 이수구분 -->
           <div class="form-group">
             <label for="courseTypeSelect">📖 이수구분</label>
             <select id="courseTypeSelect" class="form-control">
@@ -52,7 +58,7 @@
             </select>
           </div>
 
-          <!-- 5. 세부 필터: 수업방법 -->
+          <!-- 5. 수업방법 -->
           <div class="form-group">
             <label for="methodSelect">💻 수업방법</label>
             <select id="methodSelect" class="form-control">
@@ -68,8 +74,8 @@
             </div>
           </div>
 
-          <!-- 선택된 과목 목록 -->
-          <div class="selected-courses">
+          <!-- 선택된 과목 -->
+          <section class="selected-courses">
             <h4>📋 선택된 과목</h4>
             <div id="selectedCourses"></div>
             <button
@@ -79,107 +85,40 @@
             >
               🔄 전체 초기화
             </button>
-          </div>
-        </div>
+          </section>
+        </aside>
 
-        <!-- ===== 본문 영역 ===== -->
-        <div class="content">
+        <!-- ------- 내용 영역(시간표 & 통계) ------- -->
+        <section class="content">
           <div class="credits-display">
             <h2 id="totalCredits">총 학점: 0학점</h2>
             <p id="courseCount">선택된 과목 수: 0개</p>
           </div>
-          <!-- 시간표 그리드 영역 (추후 구현) -->
-        </div>
-      </div>
+
+          <!-- 시간표 그리드는 script.js 에서 동적 생성/렌더링 -->
+          <div class="schedule-container">
+            <div class="schedule-grid">
+              <div class="schedule-header">
+                <div>시간</div>
+                <div>월</div>
+                <div>화</div>
+                <div>수</div>
+                <div>목</div>
+                <div>금</div>
+              </div>
+              <div id="scheduleBody" class="schedule-body"></div>
+            </div>
+          </div>
+
+          <!-- 내보내기 / 인쇄 -->
+          <div class="export-section">
+            <button id="exportBtn" class="export-btn">
+              📤 시간표 내보내기
+            </button>
+            <button id="printBtn" class="export-btn">🖨️ 인쇄하기</button>
+          </div>
+        </section>
+      </main>
     </div>
-
-    <script>
-      const DATA_URL = "./course_schedule_with_section_id.csv";
-      let data = [];
-
-      // DOM Elements
-      const searchInput = document.getElementById("searchInput");
-      const categorySelect = document.getElementById("categorySelect");
-      const majorSelect = document.getElementById("majorSelect");
-      const typeSelect = document.getElementById("courseTypeSelect");
-      const methodSelect = document.getElementById("methodSelect");
-      const courseList = document.getElementById("courseList");
-
-      // CSV 로드 후 초기화
-      fetch(DATA_URL)
-        .then((r) => r.text())
-        .then((text) => {
-          data = Papa.parse(text, { header: true, skipEmptyLines: true }).data;
-          initFilters();
-          renderCourses();
-        });
-
-      function unique(list) {
-        return [...new Set(list)];
-      }
-
-      function initFilters() {
-        // 분류 & 수업방법 고유값
-        populate(categorySelect, unique(data.map((r) => r["분류"])));
-        populate(methodSelect, unique(data.map((r) => r["수업방법"])));
-        updateMajorAndType();
-      }
-
-      function populate(sel, arr) {
-        sel.innerHTML =
-          '<option value="">전체</option>' +
-          arr.map((v) => `<option value="${v}">${v}</option>`).join("");
-      }
-
-      function updateMajorAndType() {
-        const cat = categorySelect.value;
-        const filtered = data.filter((r) => !cat || r["분류"] === cat);
-        populate(majorSelect, unique(filtered.map((r) => r["전공"])));
-        populate(typeSelect, unique(filtered.map((r) => r["이수구분"] || "")));
-      }
-
-      function renderCourses() {
-        const kw = searchInput.value.trim().toLowerCase();
-        const cat = categorySelect.value;
-        const maj = majorSelect.value;
-        const ctype = typeSelect.value;
-        const meth = methodSelect.value;
-
-        const list = data.filter((r) => {
-          if (kw && !r["교과목명"].toLowerCase().includes(kw)) return false;
-          if (cat && r["분류"] !== cat) return false;
-          if (maj && r["전공"] !== maj) return false;
-          if (ctype && r["이수구분"] !== ctype) return false;
-          if (meth && r["수업방법"] !== meth) return false;
-          return true;
-        });
-
-        if (!list.length) {
-          courseList.innerHTML =
-            '<div class="course-item">일치하는 과목이 없습니다</div>';
-          return;
-        }
-
-        courseList.innerHTML = list
-          .map(
-            (
-              r
-            ) => `<div class="course-item" title="${r["교수명"]} | ${r["요일"]} ${r["교시/시간"]} | ${r["수업방법"]}">
-      ${r["교과목명"]} <span class="badge">${r["전공"]}</span>
-    </div>`
-          )
-          .join("");
-      }
-
-      // 이벤트 바인딩
-      searchInput.addEventListener("input", renderCourses);
-      categorySelect.addEventListener("change", () => {
-        updateMajorAndType();
-        renderCourses();
-      });
-      majorSelect.addEventListener("change", renderCourses);
-      typeSelect.addEventListener("change", renderCourses);
-      methodSelect.addEventListener("change", renderCourses);
-    </script>
   </body>
 </html>
