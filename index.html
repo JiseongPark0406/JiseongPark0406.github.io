@@ -10,7 +10,7 @@
 <body>
   <div class="container">
     <div class="header">
-      <h1>🎓 스마트 시간표 빌더 v0.2.0</h1>
+      <h1>🎓 스마트 시간표 빌더 v0.2.1</h1>
       <p>완벽한 시간표를 만들어보세요!</p>
     </div>
 
@@ -110,8 +110,14 @@ function initFilters(){
   updateMajorAndType();
 }
 
-function populate(sel, arr){
-  sel.innerHTML = '<option value="">전체</option>' + arr.map(v=>`<option value="${v}">${v}</option>`).join('');
+function populate(sel, arr) {
+        // 공백 제거 + 가나다순 정렬
+        arr = arr.filter(Boolean)
+                 .sort((a, b) => a.localeCompare(b, "ko-KR"));
+        sel.innerHTML =
+          '<option value="">전체</option>' +
+          arr.map((v) => `<option value="${v}">${v}</option>`).join("");
+      }">${v}</option>`).join('');
 }
 
 function updateMajorAndType(){
