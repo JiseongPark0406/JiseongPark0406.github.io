@@ -130,11 +130,11 @@ function parseCSVLine(line) {
   result.push(current);
   return result;
 }
-
+const DATA_URL = "./course_schedule_with_section_id.csv";
 // CSV 파일 로드 (UTF-8 우선, 깨짐 있으면 EUC-KR 재시도)
 async function loadCSVData() {
   try {
-    const response = await fetch("./course_schedule_with_section_id.csv");
+    const response = await fetch(DATA_URL);
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
     const arrayBuffer = await response.arrayBuffer();
@@ -621,68 +621,3 @@ document.addEventListener("DOMContentLoaded", function () {
   setupEventListeners();
   loadCSVData(); // 필요 시 loadTestData()로 교체하여 샘플로 테스트
 });
-
-/* 🔒 Local-only Visit Counter (이 브라우저에서만 저장·표시) */
-(function () {
-  try {
-    const KEY = 'privateVisit:v1';
-    const MODE = 'load'; // 'load' (매 로드 1증가) | 'daily' (하루 1회) | 'session' (세션당 1회)
-
-    const today = new Date().toISOString().slice(0, 10);
-
-    // 저장 불러오기
-    let data = { total: 0, byDate: {}, lastDate: null };
-    try {
-      const raw = localStorage.getItem(KEY);
-      if (raw) data = Object.assign(data, JSON.parse(raw));
-    } catch (_) {}
-
-    // 카운트 여부 결정
-    let shouldCount = true;
-    if (MODE === 'daily') {
-      shouldCount = data.lastDate !== today;
-    } else if (MODE === 'session') {
-      const k = 'privateVisitSessionFlag';
-      if (sessionStorage.getItem(k)) shouldCount = false;
-      else sessionStorage.setItem(k, '1');
-    }
-
-    if (shouldCount) {
-      data.total += 1;
-      data.byDate[today] = (data.byDate[today] || 0) + 1;
-      data.lastDate = today;
-      localStorage.setItem(KEY, JSON.stringify(data));
-    }
-
-    // 카운터 엘리먼트 생성 (흰 글자 → 드래그 때만 보임)
-    const el = document.createElement('div');
-    el.className = 'hidden-visit-counter';
-    el.setAttribute('aria-hidden', 'true');  // 보조기기 노출 방지
-    // 원하는 형식으로 문자열 구성
-    el.textContent = `Visits: ${data.total}  |  Today: ${data.byDate[today] || 0}`;
-
-    // 사이드바에 붙이기 (클래스/ID는 프로젝트 구조에 맞게 자동 탐지)
-    const sidebar = document.querySelector('.sidebar, #sidebar');
-    if (sidebar) {
-      sidebar.style.position ||= 'relative'; // 하단 고정 배치를 위해
-      sidebar.appendChild(el);
-    } else {
-      // 사이드바가 없는 경우를 대비한 고정 배치
-      el.classList.add('fixed-fallback');
-      document.body.appendChild(el);
-    }
-
-    // (옵션) 콘솔에서도 빠르게 확인 가능
-    console.log(`[Private] Visits total=${data.total}, today=${data.byDate[today] || 0}, mode=${MODE}`);
-
-    // (옵션) 리셋 함수
-    window.__resetPrivateVisit = () => {
-      localStorage.removeItem(KEY);
-      sessionStorage.removeItem('privateVisitSessionFlag');
-      alert('Private visit counter reset.');
-    };
-  } catch (e) {
-    console.warn('Private visit counter disabled:', e);
-  }
-})();
-
